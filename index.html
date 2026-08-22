@@ -1,0 +1,412 @@
+<title>내 마음 룰렛</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&family=Nanum+Pen+Script&display=swap">
+
+<style>
+  :root{
+    --ink:#140A22;
+    --veil:rgba(255,239,226,.10);
+    --cream:#FFEFE2;
+    --cream-dim:#C9B6C6;
+    --rose:#FF3E77;
+    --rose-deep:#B7124A;
+    --gold:#FFC24B;
+    --mud:#A9793F;
+
+    --f-display:"Black Han Sans","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    --f-body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    --f-hand:"Nanum Pen Script","Gowun Dodum",cursive;
+  }
+
+  *{box-sizing:border-box}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    min-height:100dvh;
+    background:
+      radial-gradient(120% 80% at 50% -10%, #3A1A47 0%, rgba(58,26,71,0) 60%),
+      radial-gradient(90% 60% at 50% 110%, #2A1036 0%, rgba(42,16,54,0) 65%),
+      var(--ink);
+    color:var(--cream);
+    font-family:var(--f-body);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+
+  #fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:5}
+
+  .stage{
+    position:relative;
+    z-index:2;
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(18px,4vh,34px);
+    padding:28px 20px 22px;
+    text-align:center;
+  }
+
+  .eyebrow{
+    font-family:var(--f-hand);
+    font-size:clamp(20px,5.4vw,26px);
+    color:var(--gold);
+    letter-spacing:.02em;
+    margin:0;
+    opacity:.95;
+  }
+
+  .heart-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:clamp(16px,3.4vh,28px);
+  }
+
+  .lede{
+    font-size:clamp(14px,3.6vw,16px);
+    line-height:1.7;
+    color:var(--cream-dim);
+    max-width:24ch;
+    margin:0;
+    text-wrap:balance;
+  }
+
+  /* ---------- 하트 ---------- */
+  .heart-btn{
+    -webkit-tap-highlight-color:transparent;
+    appearance:none;
+    border:0;
+    background:none;
+    padding:0;
+    cursor:pointer;
+    position:relative;
+    width:min(62vw,258px);
+    aspect-ratio:1 / .94;
+    display:grid;
+    place-items:center;
+    filter:drop-shadow(0 18px 40px rgba(183,18,74,.45));
+    animation:beat 1.6s ease-in-out infinite;
+  }
+  .heart-btn svg{position:absolute;inset:0;width:100%;height:100%}
+  .heart-btn .label{
+    position:relative;
+    z-index:2;
+    font-family:var(--f-display);
+    font-size:clamp(30px,8.4vw,44px);
+    color:#fff;
+    letter-spacing:.06em;
+    transform:translateY(-8%);
+    text-shadow:0 3px 0 rgba(122,8,48,.55);
+  }
+  .heart-btn:active{animation:none;transform:scale(.93)}
+  .heart-btn:focus-visible{outline:3px solid var(--gold);outline-offset:10px;border-radius:24px}
+
+  @keyframes beat{
+    0%,100%{transform:scale(1)}
+    14%{transform:scale(1.07)}
+    28%{transform:scale(.99)}
+    42%{transform:scale(1.04)}
+  }
+  @keyframes shudder{
+    0%,100%{transform:translate(0,0) rotate(0deg)}
+    20%{transform:translate(-7px,2px) rotate(-4deg) scale(1.03)}
+    40%{transform:translate(6px,-3px) rotate(4deg) scale(.98)}
+    60%{transform:translate(-5px,-2px) rotate(-3deg) scale(1.05)}
+    80%{transform:translate(5px,3px) rotate(3deg) scale(.97)}
+  }
+  .heart-btn.rolling{animation:shudder .28s linear infinite;pointer-events:none}
+
+  /* ---------- 결과 ---------- */
+  .result{
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    gap:14px;
+  }
+  .result.on{display:flex}
+  .stage.done .heart-wrap{display:none}
+
+  .glyph{
+    font-size:clamp(78px,26vw,140px);
+    line-height:1;
+    animation:pop .55s cubic-bezier(.2,1.5,.4,1) both;
+  }
+  .verdict{
+    font-family:var(--f-display);
+    font-size:clamp(46px,15vw,86px);
+    line-height:.98;
+    margin:0;
+    letter-spacing:-.01em;
+    animation:pop .55s .07s cubic-bezier(.2,1.5,.4,1) both;
+  }
+  .verdict.yes{color:var(--rose);text-shadow:0 0 34px rgba(255,62,119,.45)}
+  .verdict.no{color:var(--mud)}
+  .quip{
+    font-family:var(--f-hand);
+    font-size:clamp(21px,5.6vw,27px);
+    color:var(--cream);
+    margin:0;
+    max-width:20ch;
+    line-height:1.4;
+    animation:pop .5s .16s ease-out both;
+  }
+
+  @keyframes pop{
+    from{opacity:0;transform:scale(.55) translateY(14px)}
+    to{opacity:1;transform:scale(1) translateY(0)}
+  }
+
+  /* ---------- 버튼 ---------- */
+  .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:4px}
+  .btn{
+    -webkit-tap-highlight-color:transparent;
+    font-family:var(--f-body);
+    font-size:15px;
+    padding:13px 22px;
+    border-radius:999px;
+    border:1px solid var(--veil);
+    background:rgba(255,239,226,.06);
+    color:var(--cream);
+    cursor:pointer;
+    transition:background .18s ease, transform .12s ease;
+  }
+  .btn:hover{background:rgba(255,239,226,.13)}
+  .btn:active{transform:scale(.96)}
+  .btn:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+  .btn.primary{
+    background:linear-gradient(180deg,var(--rose),var(--rose-deep));
+    border-color:transparent;
+    color:#fff;
+    font-weight:700;
+    box-shadow:0 8px 22px rgba(183,18,74,.4);
+  }
+  .btn.primary:hover{background:linear-gradient(180deg,#FF5588,#C4144F)}
+
+  .foot{
+    font-size:12.5px;
+    color:var(--cream-dim);
+    opacity:.72;
+    margin:0;
+    font-variant-numeric:tabular-nums;
+  }
+
+  .toast{
+    position:fixed;
+    left:50%;
+    bottom:26px;
+    transform:translate(-50%,140%);
+    background:var(--cream);
+    color:var(--ink);
+    font-size:14px;
+    padding:11px 18px;
+    border-radius:999px;
+    z-index:9;
+    transition:transform .3s cubic-bezier(.2,1.3,.4,1);
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+  }
+  .toast.on{transform:translate(-50%,0)}
+
+  @media (prefers-reduced-motion:reduce){
+    .heart-btn,.heart-btn.rolling{animation:none}
+    .glyph,.verdict,.quip{animation:none}
+    *{transition-duration:.01ms !important}
+  }
+</style>
+
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<main class="stage" id="stage">
+  <p class="eyebrow" id="eyebrow">눌러도 되고, 안 눌러도 되고</p>
+
+  <div class="heart-wrap">
+    <button class="heart-btn" id="heart" aria-label="내 마음 확인하기">
+      <svg viewBox="0 0 32 29.6" aria-hidden="true">
+        <defs>
+          <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FF6E9C"></stop>
+            <stop offset="0.55" stop-color="#FF3E77"></stop>
+            <stop offset="1" stop-color="#B7124A"></stop>
+          </linearGradient>
+        </defs>
+        <path fill="url(#g)" d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4c0,9.4,9.5,11.9,16,21.2c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"></path>
+        <ellipse cx="9.6" cy="7.6" rx="3.1" ry="2.2" fill="#fff" opacity=".26" transform="rotate(-24 9.6 7.6)"></ellipse>
+      </svg>
+      <span class="label">내 마음</span>
+    </button>
+    <p class="lede">이 하트 안에 진심이 들어있어.<br>확률은... 비밀.</p>
+  </div>
+
+  <section class="result" id="result" aria-live="polite">
+    <div class="glyph" id="glyph">💩</div>
+    <h1 class="verdict" id="verdict">똥</h1>
+    <p class="quip" id="quip"></p>
+    <div class="row">
+      <button class="btn primary" id="again">한 번 더 눌러볼래</button>
+      <button class="btn" id="share">친구에게 보내기</button>
+    </div>
+    <p class="foot" id="tally"></p>
+  </section>
+</main>
+
+<div class="toast" id="toast">링크를 복사했어요</div>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage');
+  var heart=document.getElementById('heart');
+  var result=document.getElementById('result');
+  var glyph=document.getElementById('glyph');
+  var verdict=document.getElementById('verdict');
+  var quip=document.getElementById('quip');
+  var again=document.getElementById('again');
+  var share=document.getElementById('share');
+  var tally=document.getElementById('tally');
+  var toast=document.getElementById('toast');
+  var eyebrow=document.getElementById('eyebrow');
+
+  var WIN_CHANCE=0.15;
+
+  var YES=[
+    '농담 아니고 진심. 오늘부터 1일?',
+    '이거 뜬 사람 너 하나야. 진짜로.',
+    '확률 뚫고 나왔으니 운명이라 치자.',
+    '답장은 천천히. 도망은 안 돼.'
+  ];
+  var NO=[
+    '미안. 마음이 아니라 그냥 똥이었어.',
+    '오늘의 내 마음: 장 상태 안 좋음.',
+    '하트는 껍데기고, 속은 이거야.',
+    '네 잘못 아니야. 하트 잘못이야.',
+    '이거 나온 건 아무한테도 말하지 말자.',
+    '우리 그냥 친구하자. 아주 오래오래.',
+    '진심을 꺼냈는데 이게 나올 줄은.'
+  ];
+
+  var plays=0, hits=0;
+
+  function pick(a){ return a[Math.floor(Math.random()*a.length)]; }
+
+  heart.addEventListener('click', function(){
+    heart.classList.add('rolling');
+    eyebrow.textContent='두구두구두구...';
+    setTimeout(function(){
+      heart.classList.remove('rolling');
+      var win=Math.random()<WIN_CHANCE;
+      plays++; if(win){ hits++; }
+
+      glyph.textContent = win ? '💖' : '💩';
+      verdict.textContent = win ? '사귀자' : '똥';
+      verdict.className = 'verdict ' + (win ? 'yes' : 'no');
+      quip.textContent = win ? pick(YES) : pick(NO);
+      eyebrow.textContent = win ? '축하해, 진심 당첨' : '자, 이게 내 마음이야';
+      tally.textContent = plays + '번 눌러서 사귀자 ' + hits + '번';
+
+      stage.classList.add('done');
+      result.classList.add('on');
+      burst(win);
+    }, 900+Math.random()*500);
+  });
+
+  again.addEventListener('click', function(){
+    stage.classList.remove('done');
+    result.classList.remove('on');
+    eyebrow.textContent='한 번 더? 마음은 매번 바뀌어';
+  });
+
+  share.addEventListener('click', function(){
+    var url=location.href;
+    var text='내 마음 확인해줘 → '+url;
+    if(navigator.share){
+      navigator.share({title:'내 마음 룰렛', text:'내 마음 확인해줘', url:url}).catch(function(){ copy(text); });
+    } else {
+      copy(text);
+    }
+  });
+
+  function copy(text){
+    function done(){
+      toast.classList.add('on');
+      setTimeout(function(){ toast.classList.remove('on'); }, 1800);
+    }
+    function fallback(){
+      var t=document.createElement('textarea');
+      t.value=text;
+      t.setAttribute('readonly','');
+      t.style.position='fixed';
+      t.style.opacity='0';
+      document.body.appendChild(t);
+      t.select();
+      try{ document.execCommand('copy'); done(); }catch(e){}
+      document.body.removeChild(t);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+
+  /* ---------- 파티클 ---------- */
+  var cv=document.getElementById('fx');
+  var cx=cv.getContext('2d');
+  var parts=[], raf=null;
+  var reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function size(){
+    var dpr=Math.min(window.devicePixelRatio||1,2);
+    cv.width=window.innerWidth*dpr;
+    cv.height=window.innerHeight*dpr;
+    cx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  size();
+  window.addEventListener('resize', size);
+
+  function burst(win){
+    if(reduce){ return; }
+    var n = win ? 90 : 34;
+    var glyphs = win ? ['💖','💗','✨','💘'] : ['💩'];
+    for(var i=0;i<n;i++){
+      parts.push({
+        x: win ? window.innerWidth*0.5 + (Math.random()-0.5)*90 : Math.random()*window.innerWidth,
+        y: win ? window.innerHeight*0.55 : -40-Math.random()*260,
+        vx: win ? (Math.random()-0.5)*7.5 : (Math.random()-0.5)*1.1,
+        vy: win ? -9-Math.random()*7 : 2.4+Math.random()*3.2,
+        r: Math.random()*Math.PI*2,
+        vr: (Math.random()-0.5)*0.22,
+        s: (win?16:22) + Math.random()*(win?16:18),
+        g: glyphs[i%glyphs.length]
+      });
+    }
+    if(!raf){ raf=requestAnimationFrame(tick); }
+  }
+
+  function tick(){
+    var w=window.innerWidth, h=window.innerHeight;
+    cx.clearRect(0,0,w,h);
+    for(var i=parts.length-1;i>=0;i--){
+      var p=parts[i];
+      p.vy+=0.26; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr;
+      if(p.y>h+80){ parts.splice(i,1); continue; }
+      cx.save();
+      cx.translate(p.x,p.y);
+      cx.rotate(p.r);
+      cx.font=p.s+'px serif';
+      cx.textAlign='center';
+      cx.textBaseline='middle';
+      cx.fillText(p.g,0,0);
+      cx.restore();
+    }
+    if(parts.length){
+      raf=requestAnimationFrame(tick);
+    } else {
+      cx.clearRect(0,0,w,h);
+      raf=null;
+    }
+  }
+})();
+</script>
